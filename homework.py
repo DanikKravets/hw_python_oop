@@ -1,33 +1,25 @@
-def rounder(num, digits=0):
-    """Оставляет столько знаков, после запятой, сколько нужно в любом случае"""
-
-    return f'{num:.{digits}f}'
+from dataclasses import dataclass, asdict
 
 
+@dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
-    def __init__(self,
-                 training_type: str,
-                 duration: float,
-                 distance: float,
-                 speed: float,
-                 calories: float) -> None:
+    training_type: str
+    duration: float
+    distance: float
+    speed: float
+    calories: float
 
-        self.training_type = training_type
-        self.duration = rounder(duration, 3)
-        self.distance = rounder(distance, 3)
-        self.speed = rounder(speed, 3)
-        self.calories = rounder(calories, 3)
+    note = ('Тип тренировки: {training_type};'
+            ' Длительность: {duration:.3f} ч.;'
+            ' Дистанция: {distance:.3f} км;'
+            ' Ср. скорость: {speed:.3f} км/ч;'
+            ' Потрачено ккал: {calories:.3f}.')
 
     def get_message(self) -> str:
 
-        message = ''.join((f'Тип тренировки: {self.training_type};',
-                           f' Длительность: {self.duration} ч.;'
-                           f' Дистанция: {self.distance} км;',
-                           f' Ср. скорость: {self.speed} км/ч;',
-                           f' Потрачено ккал: {self.calories}.'))
-        return message
+        return self.note.format(**asdict(self))
 
 
 class Training:
@@ -35,6 +27,7 @@ class Training:
 
     M_IN_KM = 1000
     LEN_STEP = 0.65
+    min_per_h = 60
 
     def __init__(self,
                  action: int,
@@ -42,10 +35,9 @@ class Training:
                  weight: float
                  ) -> None:
 
-        min_per_h = 60
         self.action = action
         self.duration = duration
-        self.duration_min = duration * min_per_h
+        self.duration_min = duration * self.min_per_h
         self.weight = weight
 
     def get_distance(self) -> float:
@@ -143,21 +135,20 @@ class Swimming(Training):
         return sum * coeff_4 * self.weight
 
 
-def invalid_code(data: list) -> Exception:
-
-    raise Exception('Поддерживаются только коды "SWM", "RUN", "WLK" ')
-
-
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
 
-    tr: dict[str, list[int]] = {
-        'SWM': lambda data: Swimming(*data),
-        'RUN': lambda data: Running(*data),
-        'WLK': lambda data: SportsWalking(*data)}
+    tr: dict[str, list[Training]] = {
+        'SWM': Swimming,
+        'RUN': Running,
+        'WLK': SportsWalking}
 
-    creation = tr.get(workout_type, invalid_code)
-    return creation(data)
+    try:
+        creation = tr[workout_type](*data)
+    except Exception:
+        print('Поддерживаются только коды "SWM", "RUN", "WLK"')
+    else:
+        return creation
 
 
 def main(training: Training) -> None:
