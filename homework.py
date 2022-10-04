@@ -27,7 +27,7 @@ class Training:
 
     M_IN_KM = 1000
     LEN_STEP = 0.65
-    min_per_h = 60
+    MIN_PER_H = 60
 
     def __init__(self,
                  action: int,
@@ -37,7 +37,7 @@ class Training:
 
         self.action = action
         self.duration = duration
-        self.duration_min = duration * self.min_per_h
+        self.duration_min = duration * self.MIN_PER_H
         self.weight = weight
 
     def get_distance(self) -> float:
@@ -74,7 +74,7 @@ class Running(Training):
         coeff_c1 = 18  # Коэффициенты калорий
         coeff_c2 = 20
         num = coeff_c1 * self.get_mean_speed()
-        numerator = (num - coeff_c2) * self.weight  # Соблюдение 79 символов
+        numerator = (num - coeff_c2) * self.weight
 
         return numerator / self.M_IN_KM * self.duration_min
 
@@ -143,12 +143,14 @@ def read_package(workout_type: str, data: list) -> Training:
         'RUN': Running,
         'WLK': SportsWalking}
 
-    try:
+    if workout_type == 'SWM' or workout_type == 'RUN' or workout_type == 'WLK':
+
         creation = tr[workout_type](*data)
-    except Exception:
-        print('Поддерживаются только коды "SWM", "RUN", "WLK"')
-    else:
         return creation
+
+    else:
+
+        raise Exception('Поддерживаются только коды "SWM", "RUN", "WLK"')
 
 
 def main(training: Training) -> None:
