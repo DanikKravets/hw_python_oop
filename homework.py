@@ -143,7 +143,7 @@ def read_package(workout_type: str, data: list) -> Training:
         'RUN': Running,
         'WLK': SportsWalking}
 
-    if workout_type == 'SWM' or workout_type == 'RUN' or workout_type == 'WLK':
+    if tr.get(workout_type):
 
         creation = tr[workout_type](*data)
         return creation
